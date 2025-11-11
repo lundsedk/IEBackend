@@ -1,6 +1,6 @@
 ﻿namespace IEBackend.Shared;
 
-public record struct ProductItem
+public record struct ProductItem : ICatalogMarker
 {
     public string id { get; init; }
     public string title { get; init; }

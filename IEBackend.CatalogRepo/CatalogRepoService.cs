@@ -21,28 +21,13 @@ public class CatalogRepoService
 	private static readonly string productsFileName = "products-sample-v1.json";
 
 
-	public static JsonDocument? GetUpdate<T>(Version currentVersion, Version newVersion)
+	public static JsonDocument? GetUpdate<T>(Version currentVersion, Version newVersion) where T : ICatalogMarker
 	{
 
-        string segment;
-		string fileName;
+		var (segment, filename) = GetSegmentAndFilename<T>() ;
 
-		if (typeof(T) == typeof(CategoryItem))
-		{
-			segment = categorySegment;
-			fileName = categoryFileName;
-		}
-		else if (typeof(T) == typeof(ProductItem))
-		{
-			segment = productSegment;
-			fileName = productsFileName;
-		}
-		else
-		{
-			throw new NotSupportedException("Type not supported.");
-		}
-
-		string fullApiString = BaseURL +
+		// Unused
+		string fullApiString = 	BaseURL +
 								segment +
 								currentVersionParam +
 								currentVersion.ToString() +
@@ -50,17 +35,16 @@ public class CatalogRepoService
 								newVersion.ToString();
 
 		// Mock API call
-		return ReadJsonFromFile(fileName);
+		return ReadJsonFromFile(filename);
 
 	}
-	
+
 
 	private static JsonDocument? ReadJsonFromFile(string relativeFileName)
 	{
 		if (!File.Exists(relativeFileName))
 		{
-			throw new System.IO.FileNotFoundException(
-					$"Catalog JSON not found: '{relativeFileName}'.");
+			throw new System.IO.FileNotFoundException($"Catalog JSON file not found: '{relativeFileName}'.");
 		}
 
 		try
@@ -69,17 +53,30 @@ public class CatalogRepoService
 			JsonDocument JsonData = JsonDocument.Parse(JsonRawString);
 			return JsonData;
 		}
-		catch (IOException ex)
-		{
-			throw;
-		}
-		catch (JsonException ex)
-		{
-			throw;
-		}
-		catch (Exception ex)
-		{
-			throw;
-		}
+        catch (IOException ex)
+        {
+            throw new IOException($"Failed to read catalog JSON file '{relativeFileName}': {ex.Message}", ex);
+        }
+        catch (JsonException ex)
+        {
+            throw new JsonException($"Failed to parse JSON from '{relativeFileName}': {ex.Message}", ex);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Unexpected error while loading '{relativeFileName}': {ex.Message}", ex);
+        }
 	}
+
+	private static (string a, string b) GetSegmentAndFilename<T>() where T : ICatalogMarker
+	{
+
+		return typeof(T) switch
+		{
+			Type t when t == typeof(CategoryItem) => (categorySegment, categoryFileName),
+			Type t when t == typeof(ProductItem) => (productSegment, productsFileName),
+			_ => throw new NotSupportedException("Type not supported.")
+		};
+	
+	}
+
 }

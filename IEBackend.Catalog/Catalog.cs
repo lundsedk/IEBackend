@@ -10,34 +10,42 @@ public class Catalog
 	// TODO: These could be a dict or similar, so we can iterate through it to prevent code copying
 
 	record struct InternalCatalog(
-		ImmutableArray<CategoryItem> categories_,
-		ImmutableArray<ProductItem> products_
+		ImmutableArray<CategoryItem> _categories,
+		ImmutableArray<ProductItem> _products
 	);
 
-	private InternalCatalog catalog_;
+	private readonly object _swaplock = new();
+	private InternalCatalog _catalog;
 
 
 	public Catalog()
 	{
-		catalog_.categories_ = ImmutableArray<CategoryItem>.Empty;
-		catalog_.products_ = ImmutableArray<ProductItem>.Empty;
+		_catalog._categories = ImmutableArray<CategoryItem>.Empty;
+		_catalog._products = ImmutableArray<ProductItem>.Empty;
 
 		Update(new Version(0, 0), new Version(1, 1));
 	}
 
-	//TODO: add swapping
-	//	some flag or other mechanism to force a reload?
-	//	proper lock - noone should have a mix ever
 	private void Update(Version currentVersion, Version newVersion)
 	{
-		var InternalCatalog newCatalog;
+        var newCatalog = new InternalCatalog(
+            ImmutableArray<CategoryItem>.Empty,
+            ImmutableArray<ProductItem>.Empty
+        );
+
 		var jsonDocCatalog = CatalogRepoService.GetUpdate<CategoryItem>(currentVersion, newVersion);
 		var jsonDocProducts = CatalogRepoService.GetUpdate<ProductItem>(currentVersion, newVersion);
 
 		if (jsonDocCatalog != null && jsonDocProducts != null)
 		{
-			catalog_.categories_ = Builder<CategoryItem>(jsonDocCatalog);
-			catalog_.products_ = Builder<ProductItem>(jsonDocProducts);
+			newCatalog._categories = Builder<CategoryItem>(jsonDocCatalog);
+			newCatalog._products = Builder<ProductItem>(jsonDocProducts);
+
+			lock (_swaplock)
+			{
+				_catalog = newCatalog;
+			}
+
 		}
 
 	}
@@ -47,7 +55,6 @@ public class Catalog
 
 		// TODO:
 		// naive version for now, maybe change to copying from existing version later
-
 
 		var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 		var list = JsonSerializer.Deserialize<List<T>>(jsonDoc, opts) ?? new List<T>();

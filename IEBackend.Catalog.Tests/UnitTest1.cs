@@ -31,8 +31,8 @@ public class UnitTest1
         var cats = GetPrivateField<ImmutableArray<CategoryItem>>(catalog, "categories_");
         var prods = GetPrivateField<ImmutableArray<ProductItem>>(catalog, "products_");
 
-        Assert.False(cats.IsDefault, "categories_ should be initialized (not default).");
-        Assert.False(prods.IsDefault, "products_ should be initialized (not default).");
+        Assert.False(cats.IsDefault, "_categories should be initialized (not default).");
+        Assert.False(prods.IsDefault, "_products should be initialized (not default).");
     }
 
     [Fact]
