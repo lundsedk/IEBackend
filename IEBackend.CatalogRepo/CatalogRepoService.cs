@@ -13,7 +13,7 @@ public class CatalogRepoService
 {
 	private static readonly string BaseURL = "http://InfinityElectronics/ERPInterface/CatalogUpdate/";
 	private static readonly string categorySegment = "Categories?";
-	private static readonly string croductSegment = "Products?";
+	private static readonly string productSegment = "Products?";
 	private static readonly string currentVersionParam = "from=";
 	private static readonly string newVersionParam = "&to=";
 
@@ -34,7 +34,7 @@ public class CatalogRepoService
 		}
 		else if (typeof(T) == typeof(ProductItem))
 		{
-			segment = croductSegment;
+			segment = productSegment;
 			fileName = productsFileName;
 		}
 		else
@@ -59,7 +59,8 @@ public class CatalogRepoService
 	{
 		if (!File.Exists(relativeFileName))
 		{
-			return null;
+			throw new System.IO.FileNotFoundException(
+					$"Catalog JSON not found: '{relativeFileName}'.");
 		}
 
 		try

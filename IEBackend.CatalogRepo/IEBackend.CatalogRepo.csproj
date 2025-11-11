@@ -2,6 +2,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\IEBackend.Shared\IEBackend.Shared.csproj" />
+    <None Include="categories-sample-v1.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="products-sample-v1.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <PropertyGroup>
