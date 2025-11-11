@@ -1,0 +1,6 @@
+@IEBackend.Api_HostAddress = http://localhost:5161
+
+GET {{IEBackend.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
