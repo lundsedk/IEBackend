@@ -1,6 +1,8 @@
 ﻿using System.Dynamic;
 using System.Text.Json;
 
+using IEBackend.Shared;
+
 namespace IEBackend.CatalogRepo;
 
 //include some baseurl
@@ -10,55 +12,48 @@ namespace IEBackend.CatalogRepo;
 public class CatalogRepoService
 {
 	private static readonly string BaseURL = "http://InfinityElectronics/ERPInterface/CatalogUpdate/";
-	private static readonly string CategorySegment = "Categories?";
-	private static readonly string ProductSegment = "Products?";
+	private static readonly string categorySegment = "Categories?";
+	private static readonly string croductSegment = "Products?";
 	private static readonly string currentVersionParam = "from=";
 	private static readonly string newVersionParam = "&to=";
 
 	private static readonly string categoryFileName = "categories-sample-v1.json";
 	private static readonly string productsFileName = "products-sample-v1.json";
 
-	public static JsonDocument? GetCategoryUpdate(Version currentVersion, Version newVersion)
+
+	public static JsonDocument? GetUpdate<T>(Version currentVersion, Version newVersion)
 	{
 
-		string fullApiString = 	BaseURL +
-								CategorySegment + 
+        string segment;
+		string fileName;
+
+		if (typeof(T) == typeof(CategoryItem))
+		{
+			segment = categorySegment;
+			fileName = categoryFileName;
+		}
+		else if (typeof(T) == typeof(ProductItem))
+		{
+			segment = croductSegment;
+			fileName = productsFileName;
+		}
+		else
+		{
+			throw new NotSupportedException("Type not supported.");
+		}
+
+		string fullApiString = BaseURL +
+								segment +
 								currentVersionParam +
 								currentVersion.ToString() +
 								newVersionParam +
 								newVersion.ToString();
 
 		// Mock API call
-		if (fullApiString == "http://InfinityElectronics/ERPInterface/CatalogUpdate/Categories?from=0.0.0&to=1.0.0")
-		{
-			return ReadJsonFromFile(categoryFileName);
-		} else {
-			return null;
-		}
+		return ReadJsonFromFile(fileName);
 
 	}
-
-	public static JsonDocument? GetProductUpdate(Version currentVersion, Version newVersion)
-	{
-
-		string fullApiString = 	BaseURL +
-								ProductSegment + 
-								currentVersionParam +
-								currentVersion.ToString() +
-								newVersionParam +
-								newVersion.ToString();
-
-		// Mock API call
-		if (fullApiString == "http://InfinityElectronics/ERPInterface/CatalogUpdate/Products?from=0.0.0&to=1.0.0")
-		{
-			return ReadJsonFromFile(productsFileName);
-		} else {
-			return null;
-		}
-
-	}
-
-	//version object in shared
+	
 
 	private static JsonDocument? ReadJsonFromFile(string relativeFileName)
 	{
