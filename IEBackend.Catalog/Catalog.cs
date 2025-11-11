@@ -7,13 +7,13 @@ namespace IEBackend.Catalog;
 
 public class Catalog
 {
-	// TODO: These could be a dict or similar, so we can iterate through it to prevent code copying
 
 	record struct InternalCatalog(
 		IReadOnlyList<CategoryItem> _categories,
 		IReadOnlyList<ProductItem> _products
 	);
 
+	private Version _currentVersion;
 	private readonly object _swaplock = new();
 	private InternalCatalog _catalog;
 
@@ -53,6 +53,7 @@ public class Catalog
 			{
 				_catalog = newCatalog;
 			}
+			_currentVersion = newVersion;
 
 		}
 
@@ -60,9 +61,6 @@ public class Catalog
 
 	private IReadOnlyList<T> Builder<T>(JsonDocument jsonDoc)
 	{
-
-		// TODO:
-		// naive version for now, maybe change to copying from existing version later
 
 		var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 		var list = JsonSerializer.Deserialize<List<T>>(jsonDoc, opts) ?? new List<T>();
