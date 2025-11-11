@@ -42,28 +42,30 @@ public class CatalogRepoService
 
 	private static JsonDocument? ReadJsonFromFile(string relativeFileName)
 	{
-		if (!File.Exists(relativeFileName))
+		var fullpathFilename = Path.Combine(AppContext.BaseDirectory, relativeFileName);
+
+		if (!File.Exists(fullpathFilename))
 		{
-			throw new System.IO.FileNotFoundException($"Catalog JSON file not found: '{relativeFileName}'.");
+			throw new System.IO.FileNotFoundException($"Catalog JSON file not found: '{fullpathFilename}'.");
 		}
 
 		try
 		{
-			string JsonRawString = File.ReadAllText(relativeFileName);
+			string JsonRawString = File.ReadAllText(fullpathFilename);
 			JsonDocument JsonData = JsonDocument.Parse(JsonRawString);
 			return JsonData;
 		}
         catch (IOException ex)
         {
-            throw new IOException($"Failed to read catalog JSON file '{relativeFileName}': {ex.Message}", ex);
+            throw new IOException($"Failed to read catalog JSON file '{fullpathFilename}': {ex.Message}", ex);
         }
         catch (JsonException ex)
         {
-            throw new JsonException($"Failed to parse JSON from '{relativeFileName}': {ex.Message}", ex);
+            throw new JsonException($"Failed to parse JSON from '{fullpathFilename}': {ex.Message}", ex);
         }
         catch (Exception ex)
         {
-            throw new Exception($"Unexpected error while loading '{relativeFileName}': {ex.Message}", ex);
+            throw new Exception($"Unexpected error while loading '{fullpathFilename}': {ex.Message}", ex);
         }
 	}
 

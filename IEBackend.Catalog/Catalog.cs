@@ -10,8 +10,8 @@ public class Catalog
 	// TODO: These could be a dict or similar, so we can iterate through it to prevent code copying
 
 	record struct InternalCatalog(
-		ImmutableArray<CategoryItem> _categories,
-		ImmutableArray<ProductItem> _products
+		IReadOnlyList<CategoryItem> _categories,
+		IReadOnlyList<ProductItem> _products
 	);
 
 	private readonly object _swaplock = new();
@@ -20,18 +20,26 @@ public class Catalog
 
 	public Catalog()
 	{
-		_catalog._categories = ImmutableArray<CategoryItem>.Empty;
-		_catalog._products = ImmutableArray<ProductItem>.Empty;
+		_catalog._categories = Array.Empty<CategoryItem>();
+		_catalog._products = Array.Empty<ProductItem>();
 
 		Update(new Version(0, 0), new Version(1, 1));
 	}
 
+    public IReadOnlyList<CategoryItem> GetCategories() {
+		return _catalog._categories;
+	}
+    public IReadOnlyList<ProductItem> GetProducts()
+	{
+		return _catalog._products;
+	}
+
 	private void Update(Version currentVersion, Version newVersion)
 	{
-        var newCatalog = new InternalCatalog(
-            ImmutableArray<CategoryItem>.Empty,
-            ImmutableArray<ProductItem>.Empty
-        );
+		var newCatalog = new InternalCatalog(
+			Array.Empty<CategoryItem>(),
+			Array.Empty<ProductItem>()
+		);
 
 		var jsonDocCatalog = CatalogRepoService.GetUpdate<CategoryItem>(currentVersion, newVersion);
 		var jsonDocProducts = CatalogRepoService.GetUpdate<ProductItem>(currentVersion, newVersion);
@@ -50,7 +58,7 @@ public class Catalog
 
 	}
 
-	private ImmutableArray<T> Builder<T>(JsonDocument jsonDoc)
+	private IReadOnlyList<T> Builder<T>(JsonDocument jsonDoc)
 	{
 
 		// TODO:
@@ -58,7 +66,7 @@ public class Catalog
 
 		var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 		var list = JsonSerializer.Deserialize<List<T>>(jsonDoc, opts) ?? new List<T>();
-		ImmutableArray<T> returnValue = list.ToImmutableArray();
+		IReadOnlyList<T> returnValue = list.ToList();
 
 		return returnValue;
 	}

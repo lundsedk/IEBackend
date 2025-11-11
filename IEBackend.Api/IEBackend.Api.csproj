@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\IEBackend.Shared\IEBackend.Shared.csproj" />
+    <ProjectReference Include="..\IEBackend.Catalog\IEBackend.Catalog.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,13 @@
+using IEBackend.Shared;
+using IEBackend.Catalog;
+
+// TODO: cleanup!!!
+//      add class and inject catalog via ctor
+
 var builder = WebApplication.CreateBuilder(args);
+
+// register Catalog for DI
+builder.Services.AddSingleton<Catalog>();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -16,29 +25,35 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
 
-app.MapGet("/weatherforecast", () =>
+
+
+
+app.MapGet("/getProductDetails", (Catalog catalog, string id) =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    var products = catalog.GetProducts();
+    var product = products.FirstOrDefault(p => p.id == id);
+
+    if (string.IsNullOrEmpty(product.id))
+        return Results.NotFound();
+
+    return Results.Ok(product);
+
 })
-.WithName("GetWeatherForecast")
+.WithName("GetProductDetails")
 .WithOpenApi();
 
-app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+app.MapGet("/getProductListing", (Catalog catalog, string category) =>
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+    var products = catalog.GetProducts();
+    var list = products
+        .Where(p => string.Equals(p.category, category, StringComparison.OrdinalIgnoreCase))
+        .ToArray();
+
+    return Results.Ok(list);
+})
+.WithName("GetProductListing")
+.WithOpenApi();
+
+
+app.Run();
